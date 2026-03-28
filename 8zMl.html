@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator e-KTP Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-card, .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .form-card h2, .result-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-image {
+            text-align: center;
+            display: none;
+        }
+
+        .result-image.active {
+            display: block;
+        }
+
+        .result-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            margin-top: 15px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <h2>📝 Form Data e-KTP</h2>
+            <form id="ektpForm">
+                <div class="row">
+                    <div class="form-group">
+                        <label>Provinsi</label>
+                        <input type="text" id="provinsi" value="JAWA BARAT" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kota/Kabupaten</label>
+                        <input type="text" id="kota" value="BANDUNG" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>NIK (16 digit)</label>
+                    <input type="text" id="nik" maxlength="16" pattern="\d{16}" value="1234567890123456" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="nama" value="John Doe" required>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>Tempat, Tgl Lahir</label>
+                        <input type="text" id="ttl" value="Bandung, 01-01-1990" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis Kelamin</label>
+                        <select id="jenis_kelamin">
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>Golongan Darah</label>
+                        <select id="golongan_darah">
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Agama</label>
+                        <select id="agama">
+                            <option value="Islam">Islam</option>
+                            <option value="Kristen">Kristen</option>
+                            <option value="Katolik">Katolik</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Buddha">Buddha</option>
+                            <option value="Konghucu">Konghucu</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Alamat</label>
+                    <input type="text" id="alamat" value="Jl. Contoh No. 123" required>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>RT/RW</label>
+                        <input type="text" id="rt_rw" value="001/002" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kel/Desa</label>
+                        <input type="text" id="kel_desa" value="Sukajadi" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>Kecamatan</label>
+                        <input type="text" id="kecamatan" value="Sukajadi" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status Perkawinan</label>
+                        <select id="status">
+                            <option value="Belum Kawin">Belum Kawin</option>
+                            <option value="Kawin">Kawin</option>
+                            <option value="Cerai Hidup">Cerai Hidup</option>
+                            <option value="Cerai Mati">Cerai Mati</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>Pekerjaan</label>
+                        <input type="text" id="pekerjaan" value="Pegawai Swasta" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kewarganegaraan</label>
+                        <select id="kewarganegaraan">
+                            <option value="WNI">WNI</option>
+                            <option value="WNA">WNA</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>Masa Berlaku</label>
+                        <select id="masa_berlaku">
+                            <option value="Seumur Hidup">Seumur Hidup</option>
+                            <option value="5 Tahun">5 Tahun</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Terbuat</label>
+                        <input type="text" id="terbuat" value="01-01-2023" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>URL Foto (opsional)</label>
+                    <input type="url" id="pas_photo" placeholder="https://example.com/foto.jpg" value="https://i.pinimg.com/736x/0b/9f/0a/0b9f0a92a598e6c22629004c1027d23f.jpg">
+                </div>
+
+                <button type="submit">🚀 Generate e-KTP</button>
+            </form>
+        </div>
+
+        <div class="result-card">
+            <h2>🪪 Hasil e-KTP</h2>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Sedang membuat e-KTP...</p>
+            </div>
+            <div class="result-image" id="resultImage">
+                <img id="ektpImage" alt="e-KTP">
+                <button class="download-btn" id="downloadBtn">💾 Download e-KTP</button>
+            </div>
+            <div class="error" id="error">
+                <strong>❌ Error:</strong> <span id="errorMsg"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('ektpForm');
+        const loading = document.getElementById('loading');
+        const resultImage = document.getElementById('resultImage');
+        const ektpImage = document.getElementById('ektpImage');
+        const errorDiv = document.getElementById('error');
+        const errorMsg = document.getElementById('errorMsg');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Sembunyikan hasil sebelumnya
+            resultImage.classList.remove('active');
+            errorDiv.classList.remove('active');
+            loading.classList.add('active');
+            
+            // Kumpulkan data
+            const params = new URLSearchParams();
+            params.append('provinsi', document.getElementById('provinsi').value);
+            params.append('kota', document.getElementById('kota').value);
+            params.append('nik', document.getElementById('nik').value);
+            params.append('nama', document.getElementById('nama').value);
+            params.append('ttl', document.getElementById('ttl').value);
+            params.append('jenis_kelamin', document.getElementById('jenis_kelamin').value);
+            params.append('golongan_darah', document.getElementById('golongan_darah').value);
+            params.append('alamat', document.getElementById('alamat').value);
+            params.append('rt/rw', document.getElementById('rt_rw').value);
+            params.append('kel/desa', document.getElementById('kel_desa').value);
+            params.append('kecamatan', document.getElementById('kecamatan').value);
+            params.append('agama', document.getElementById('agama').value);
+            params.append('status', document.getElementById('status').value);
+            params.append('pekerjaan', document.getElementById('pekerjaan').value);
+            params.append('kewarganegaraan', document.getElementById('kewarganegaraan').value);
+            params.append('masa_berlaku', document.getElementById('masa_berlaku').value);
+            params.append('terbuat', document.getElementById('terbuat').value);
+            
+            const fotoUrl = document.getElementById('pas_photo').value;
+            if (fotoUrl) {
+                params.append('pas_photo', fotoUrl);
+            }
+            
+            const url = `https://api.siputzx.my.id/api/canvas/ektp?${params.toString()}`;
+            
+            try {
+                // Coba fetch gambar
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+                
+                ektpImage.src = imageUrl;
+                loading.classList.remove('active');
+                resultImage.classList.add('active');
+                
+                // Setup download
+                downloadBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = imageUrl;
+                    a.download = `ektp_${document.getElementById('nik').value}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loading.classList.remove('active');
+                errorMsg.textContent = error.message;
+                errorDiv.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
